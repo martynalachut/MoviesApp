@@ -41,7 +41,7 @@ namespace Movies.Server.Infrastructure
 
 			var appInfo = context.AppInfo;
 			siloHost
-				.AddMemoryGrainStorageAsDefault()
+				.UseStorage()
 				.Configure<ClusterOptions>(options =>
 				{
 					options.ClusterId = appInfo.ClusterId;
