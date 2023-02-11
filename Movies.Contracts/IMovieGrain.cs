@@ -8,9 +8,8 @@ namespace Movies.GrainInterfaces
 	public interface IMovieGrain : IGrainWithIntegerKey
 	{
 		Task<MovieDetails> GetMovieAsync();
-		Task<List<MovieDetails>> GetMoviesAsync();
-		Task<List<MovieDetails>> GetMoviesByGenreAsync(string genre);
-		Task AddMovie(string name);
-		Task UpdateMovie(string name);
+		Task<IList<MovieDetails>> GetMoviesAsync();
+		Task<IList<MovieDetails>> GetMoviesByGenreAsync(string genre);
+		Task AddOrUpdateMovieAsync(MovieDetails movieDetails);
 	}
 }

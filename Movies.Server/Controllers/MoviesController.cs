@@ -19,12 +19,14 @@ namespace Movies.Server.Controllers
 			_orleansClient = clusterClient;
 		}
 
-		[HttpGet("{movieId}")]
+		[HttpGet("/{movieId}")]
 		//[Authorize(Policy = MoviesAuthorizationPolicies.RetrievePolicy)]
-		public async Task<MovieDetails> GetMovieAsync(long movieId)
+		public async Task<IActionResult> GetMovieAsync(long movieId)
 		{
 			var grain = _orleansClient.GetGrain<IMovieGrain>(movieId);
-			return await grain.GetMovieAsync();
+			var movie = await grain.GetMovieAsync();
+
+			return Ok(movie);
 		}
 
 		//[HttpGet("")]
@@ -34,12 +36,10 @@ namespace Movies.Server.Controllers
 
 		//}
 
-		//[HttpPost]
+		[HttpPost]
 		//[Authorize(Policy = MoviesAuthorizationPolicies.UploadPolicy)]
-		//public async Task<IActionResult> AddMovieAsync()
-		//{
-
-		//}
+		public async Task AddMovieAsync(MovieDetails movieDetails) => 
+			await _orleansClient.GetGrain<IMovieGrain>(movieDetails.Id).AddOrUpdateMovieAsync(movieDetails);
 
 		//[HttpPut("{movieId}")]
 		//[Authorize(Policy = MoviesAuthorizationPolicies.UploadPolicy)]

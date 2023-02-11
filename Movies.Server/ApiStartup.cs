@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Movies.Core;
 using Movies.GrainClients;
+using Movies.GrainInterfaces;
+using Movies.Grains;
 using Movies.Server.Gql;
 using Movies.Server.Gql.App;
 using Movies.Server.Infrastructure;
@@ -53,6 +55,7 @@ namespace Movies.Server
 			services.AddAppGraphQL();
 			services.AddControllers()
 			.AddNewtonsoftJson();
+			services.AddTransient<IMovieGrain, MovieGrain>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

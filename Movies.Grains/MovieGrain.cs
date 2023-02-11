@@ -10,10 +10,19 @@ namespace Movies.Grains
 	{
 		public MovieGrain() { }
 
-		public Task AddMovie(string name) => throw new System.NotImplementedException();
-		public Task<MovieDetails> GetMovieAsync() => Task.FromResult(State);
-		public Task<List<MovieDetails>> GetMoviesAsync() => throw new System.NotImplementedException();
-		public Task<List<MovieDetails>> GetMoviesByGenreAsync(string genre) => throw new System.NotImplementedException();
-		public Task UpdateMovie(string name) => throw new System.NotImplementedException();
+		public async Task AddOrUpdateMovieAsync(MovieDetails movieDetails)
+		{
+			State = movieDetails;
+
+			await WriteStateAsync();
+		}
+
+		public Task<MovieDetails> GetMovieAsync()
+		{
+			return Task.FromResult(State);
+		}
+
+		public Task<IList<MovieDetails>> GetMoviesAsync() => throw new System.NotImplementedException(); //Task.FromResult(_moviesCache.Values.ToList());
+		public Task<IList<MovieDetails>> GetMoviesByGenreAsync(string genre) => throw new System.NotImplementedException();
 	}
 }

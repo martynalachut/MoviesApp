@@ -33,15 +33,16 @@ namespace Movies.Server.Infrastructure
 
 	public static class SiloBuilderExtensions
 	{
-		private static StorageProviderType _defaultProviderType;
 
 		public static ISiloBuilder UseAppConfiguration(this ISiloBuilder siloHost, AppSiloBuilderContext context)
 		{
-			_defaultProviderType = context.SiloOptions.StorageProviderType ?? StorageProviderType.Memory;
-
 			var appInfo = context.AppInfo;
 			siloHost
-				.UseStorage()
+				.AddDynamoDBGrainStorageAsDefault(options =>
+				{
+					options.Service = "http://localhost:4566";
+					options.UseJson = true;
+				})
 				.Configure<ClusterOptions>(options =>
 				{
 					options.ClusterId = appInfo.ClusterId;
@@ -72,25 +73,7 @@ namespace Movies.Server.Infrastructure
 			var gatewayPort = context.SiloOptions.GatewayPort;
 
 			return siloHost
-					.UseLocalhostClustering(siloPort: siloPort, gatewayPort: gatewayPort)
-				;
-		}
-
-		public static ISiloBuilder UseStorage(this ISiloBuilder siloBuilder, string storeProviderName, IAppInfo appInfo, StorageProviderType? storageProvider = null, string storeName = null)
-		{
-			storeName = storeName.IfNullOrEmptyReturn(storeProviderName);
-			storageProvider ??= _defaultProviderType;
-
-			switch (storageProvider)
-			{
-				case StorageProviderType.Memory:
-					siloBuilder.AddMemoryGrainStorage(storeProviderName);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(storageProvider), $"Storage provider '{storageProvider}' is not supported.");
-			}
-
-			return siloBuilder;
+					.UseLocalhostClustering(siloPort: siloPort, gatewayPort: gatewayPort);
 		}
 	}
 }
