@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Movies.Contracts;
 
 namespace Movies.GrainClients
 {

@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Movies.Contracts;
 using Movies.GrainInterfaces;
-using Movies.Server.Authorization;
 using Orleans;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Movies.Server.Controllers
@@ -19,33 +20,48 @@ namespace Movies.Server.Controllers
 			_orleansClient = clusterClient;
 		}
 
-		[HttpGet("/{movieId}")]
-		//[Authorize(Policy = MoviesAuthorizationPolicies.RetrievePolicy)]
+		[HttpGet("{movieId}")]
 		public async Task<IActionResult> GetMovieAsync(long movieId)
 		{
-			var grain = _orleansClient.GetGrain<IMovieGrain>(movieId);
-			var movie = await grain.GetMovieAsync();
+			var movie = await _orleansClient.GetGrain<IMovieGrain>(movieId).GetMovieDetailsAsync();
 
 			return Ok(movie);
 		}
 
-		//[HttpGet("")]
-		//[Authorize(Policy = MoviesAuthorizationPolicies.RetrievePolicy)]
-		//public async Task<IActionResult> GetMoviesAsync()
-		//{
+		[HttpGet()]
+		public async Task<IActionResult> GetAllMoviesAsync()
+		{
+			var func = new Func<IMoviesStoreGrain, Task<HashSet<MovieDetails>>>(
+				movies => movies.GetAllMoviesAsync());
+			var movies = await func.Invoke(_orleansClient.GetGrain<IMoviesStoreGrain>("MoviesStore"));
+			//var movies = await _orleansClient.GetGrain<IMoviesStoreGrain>("MoviesStore").GetAllMoviesAsync();
 
-		//}
+			return Ok(movies.ToList());
+		}
 
 		[HttpPost]
-		//[Authorize(Policy = MoviesAuthorizationPolicies.UploadPolicy)]
-		public async Task AddMovieAsync(MovieDetails movieDetails) => 
-			await _orleansClient.GetGrain<IMovieGrain>(movieDetails.Id).AddOrUpdateMovieAsync(movieDetails);
+		public async Task<IActionResult> AddMovieAsync(MovieDetails movie)
+		{
+			await _orleansClient.GetGrain<IMovieGrain>(movie.Id).AddOrUpdateMovieAsync(movie);
 
-		//[HttpPut("{movieId}")]
-		//[Authorize(Policy = MoviesAuthorizationPolicies.UploadPolicy)]
-		//public async Task<IActionResult> UpdateMovieDetailsAsync(string movieId)
-		//{
+			return Ok();
+		}
 
-		//}
+		[HttpPut("{movieId}")]
+		public async Task<IActionResult> UpdateMovieAsync(long movieId, MovieDetails movie)
+		{
+			var g = _orleansClient.GetGrain<IMovieGrain>(movieId);
+				await g.AddOrUpdateMovieAsync(movie);
+
+			return Ok();
+		}
+
+		[HttpDelete("{movieId}")]
+		public async Task<IActionResult> DeleteMovieAsync(long movieId)
+		{
+			await _orleansClient.GetGrain<IMoviesStoreGrain>(movieId.ToString()).RemoveMovieAsync(movieId);
+
+			return Ok();
+		}
 	}
 }

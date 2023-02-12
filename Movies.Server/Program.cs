@@ -87,10 +87,10 @@ namespace Movies.Server
 								SiloPort = GetAvailablePort(11111, 12000),
 								GatewayPort = 30001
 							}
-						})
-						//.ConfigureApplicationParts(parts => parts
-						//	.AddApplicationPart(typeof(MovieGrain).Assembly).WithReferences()
-						//)
+						}, ctx)
+						.ConfigureApplicationParts(parts => parts
+							.AddApplicationPart(typeof(MoviesStoreGrain).Assembly).WithReferences()
+						)
 						.AddIncomingGrainCallFilter<LoggingIncomingCallFilter>()
 					;
 

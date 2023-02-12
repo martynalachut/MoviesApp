@@ -2,7 +2,6 @@
 using Movies.Core;
 using Orleans.Configuration;
 using Orleans.Hosting;
-using System;
 using System.Diagnostics;
 using System.Net;
 using HostBuilderContext = Microsoft.Extensions.Hosting.HostBuilderContext;
@@ -34,23 +33,28 @@ namespace Movies.Server.Infrastructure
 	public static class SiloBuilderExtensions
 	{
 
-		public static ISiloBuilder UseAppConfiguration(this ISiloBuilder siloHost, AppSiloBuilderContext context)
+		public static ISiloBuilder UseAppConfiguration(this ISiloBuilder siloHost, AppSiloBuilderContext context, HostBuilderContext hostBuilderContext)
 		{
 			var appInfo = context.AppInfo;
-			siloHost
-				.AddDynamoDBGrainStorageAsDefault(options =>
-				{
-					options.Service = "http://localhost:4566";
-					options.UseJson = true;
-				})
-				.Configure<ClusterOptions>(options =>
+			if (hostBuilderContext.HostingEnvironment.IsDevelopment())
+			{
+				siloHost.Configure<ClusterOptions>(options =>
 				{
 					options.ClusterId = appInfo.ClusterId;
 					options.ServiceId = appInfo.Name;
 				});
 
-			siloHost.UseDevelopment(context);
-			siloHost.UseDevelopmentClustering(context);
+				siloHost.AddMemoryGrainStorage("movies-store");
+				siloHost.UseDevelopment(context);
+				siloHost.UseDevelopmentClustering(context);
+			}
+			
+			// TODO: Use DynamoDB in Production clustering
+			//.AddDynamoDBGrainStorageAsDefault(options =>
+			// {
+			//	 options.Service = "http://...";
+			//	 options.UseJson = true;
+			// })
 
 			return siloHost;
 		}

@@ -1,7 +1,6 @@
 ﻿using Movies.Contracts;
 using Movies.GrainInterfaces;
 using Orleans;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Movies.Grains
@@ -10,19 +9,33 @@ namespace Movies.Grains
 	{
 		public MovieGrain() { }
 
-		public async Task AddOrUpdateMovieAsync(MovieDetails movieDetails)
+		public Task AddOrUpdateMovieAsync(MovieDetails movie) => UpdateStateAsync(movie);
+
+		public Task<MovieDetails> GetMovieDetailsAsync() => Task.FromResult(State);
+
+		private async Task UpdateStateAsync(MovieDetails movie)
 		{
-			State = movieDetails;
+			if (State.Id == 0)
+			{
+				State.Id = movie.Id;
+			}
+			UpdateState(movie);
 
 			await WriteStateAsync();
+
+			var moviesStore = GrainFactory.GetGrain<IMoviesStoreGrain>(State.Id.ToString());
+			await moviesStore.AddOrUpdateMovieAsync(movie);
 		}
 
-		public Task<MovieDetails> GetMovieAsync()
+		private void UpdateState(MovieDetails movie)
 		{
-			return Task.FromResult(State);
+			State.Key = movie.Key;
+			State.Name = movie.Name;
+			State.Description = movie.Description;
+			State.Genres = movie.Genres;
+			State.Rate = movie.Rate;
+			State.Length = movie.Length;
+			State.Img = movie.Img;
 		}
-
-		public Task<IList<MovieDetails>> GetMoviesAsync() => throw new System.NotImplementedException(); //Task.FromResult(_moviesCache.Values.ToList());
-		public Task<IList<MovieDetails>> GetMoviesByGenreAsync(string genre) => throw new System.NotImplementedException();
 	}
 }

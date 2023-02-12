@@ -1,4 +1,7 @@
 ﻿// ReSharper disable once CheckNamespace
+using Movies.GrainInterfaces;
+using Movies.Grains;
+
 namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class AppGrainsServiceCollectionExtensions
