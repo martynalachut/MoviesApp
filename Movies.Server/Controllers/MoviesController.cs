@@ -2,8 +2,6 @@
 using Movies.Contracts;
 using Movies.GrainInterfaces;
 using Orleans;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,10 +29,7 @@ namespace Movies.Server.Controllers
 		[HttpGet()]
 		public async Task<IActionResult> GetAllMoviesAsync()
 		{
-			var func = new Func<IMoviesStoreGrain, Task<HashSet<MovieDetails>>>(
-				movies => movies.GetAllMoviesAsync());
-			var movies = await func.Invoke(_orleansClient.GetGrain<IMoviesStoreGrain>("MoviesStore"));
-			//var movies = await _orleansClient.GetGrain<IMoviesStoreGrain>("MoviesStore").GetAllMoviesAsync();
+			var movies = await _orleansClient.GetGrain<IMoviesStoreGrain>("MoviesStore").GetAllMoviesAsync();
 
 			return Ok(movies.ToList());
 		}
@@ -50,8 +45,7 @@ namespace Movies.Server.Controllers
 		[HttpPut("{movieId}")]
 		public async Task<IActionResult> UpdateMovieAsync(long movieId, MovieDetails movie)
 		{
-			var g = _orleansClient.GetGrain<IMovieGrain>(movieId);
-				await g.AddOrUpdateMovieAsync(movie);
+			await _orleansClient.GetGrain<IMovieGrain>(movieId).AddOrUpdateMovieAsync(movie);
 
 			return Ok();
 		}

@@ -1,61 +1,49 @@
 ﻿using Movies.Contracts;
 using Movies.GrainInterfaces;
 using Orleans;
-using Orleans.Runtime;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Movies.Grains
 {
-	public class MoviesStoreGrain : Grain, IMoviesStoreGrain
+	public class MoviesStoreState
 	{
-		private readonly IPersistentState<HashSet<long>> _moviesIds;
-		private readonly Dictionary<long, MovieDetails> _moviesCache = new();
+		public Dictionary<long, MovieDetails> Store { get; set; } = new();
+	}
 
-		public MoviesStoreGrain(
-			[PersistentState(
-			stateName: "MoviesStore", storageName: "movies-store")]
-		IPersistentState<HashSet<long>> state) => _moviesIds = state;
-
+	public class MoviesStoreGrain : Grain<MoviesStoreState>, IMoviesStoreGrain
+	{
 		public async Task AddOrUpdateMovieAsync(MovieDetails movie)
 		{
-			_moviesIds.State.Add(movie.Id);
-			_moviesCache.Add(movie.Id, movie);
+			if (State.Store.TryGetValue(movie.Id, out var existingMovie))
+			{
+				State.Store[movie.Id] = movie;
+			}
+			else
+			{
+				State.Store.Add(movie.Id, movie);
+			}
 
-			await _moviesIds.WriteStateAsync();
+			await WriteStateAsync();
 		}
-		public override Task OnActivateAsync() => PopulateMoviesCacheAsync();
 
 		public Task<HashSet<MovieDetails>> GetAllMoviesAsync() 
 		{
-			var movies = new HashSet<MovieDetails>(_moviesCache.Values);
+			var movies = new HashSet<MovieDetails>(State.Store.Values);
 			return Task.FromResult(movies);
 		}
-		public Task<IEnumerable<MovieDetails>> GetMoviesByGenreAsync(string genre) => throw new System.NotImplementedException();
+		public Task<IEnumerable<MovieDetails>> GetMoviesByGenreAsync(string genre)
+		{
+			var matchedMovies = State.Store.Values.Where(m => m.Genres.Contains(genre));
+			return Task.FromResult(matchedMovies);
+		}
 
 		public async Task RemoveMovieAsync(long movieId)
 		{
-			_moviesIds.State.Remove(movieId);
-			_moviesCache.Remove(movieId);
+			State.Store.Remove(movieId);
 
-			await _moviesIds.WriteStateAsync();
-		}
-
-		private async Task PopulateMoviesCacheAsync()
-		{
-			if (_moviesIds is not { State.Count: > 0 })
-			{
-				return;
-			}
-
-			await Task.Run(() => Parallel.ForEach(_moviesIds.State, new ParallelOptions { TaskScheduler = TaskScheduler.Current },
-			async (id, _) =>
-			{
-				var movieGrain = GrainFactory.GetGrain<IMovieGrain>(id);
-				_moviesCache[id] = await movieGrain.GetMovieDetailsAsync();
-			}));
+			await WriteStateAsync();
 		}
 	}
 }

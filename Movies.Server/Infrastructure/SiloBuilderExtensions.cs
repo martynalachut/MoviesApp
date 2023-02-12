@@ -38,13 +38,18 @@ namespace Movies.Server.Infrastructure
 			var appInfo = context.AppInfo;
 			if (hostBuilderContext.HostingEnvironment.IsDevelopment())
 			{
-				siloHost.Configure<ClusterOptions>(options =>
+				siloHost
+				.AddDynamoDBGrainStorageAsDefault(options =>
+				 {
+					 options.Service = "http://localhost:4566";
+					 options.UseJson = true;
+				 })
+				.Configure<ClusterOptions>(options =>
 				{
 					options.ClusterId = appInfo.ClusterId;
 					options.ServiceId = appInfo.Name;
 				});
 
-				siloHost.AddMemoryGrainStorage("movies-store");
 				siloHost.UseDevelopment(context);
 				siloHost.UseDevelopmentClustering(context);
 			}
