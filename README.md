@@ -2,78 +2,51 @@
 **Version: 1.0**
 ## Scenario
 
-You are tasked with creating an API for an application that the company is building for a client. The application is a movies indexing application that will have high volumes of traffic and thus it needs to be fast, efficient and robust while being secure at the same time.
+This project is a movies indexing application, which has the following functionality:
 
-The application has the following functionality:
-
-## Features
-
-- **Home**
-  - List top 5 highest rated movies
-- **Movies List**
-  - List Movies
-  - Search
-  - Filter by Genre
 - **Movie detail**
   - Display selected movie detail information
 - **Create Movie**
   - Create a new movie that can be retrieved in the movies list
 - **Update Movie**
-  - Update movies data.  
+  - Update movies data.
 
-### Technologies required
+A `movies.json` file with some mock data is provided to help with testing.
 
-- [ASP.NET (AspNetCore)](https://dotnet.microsoft.com/apps/aspnet) (3.1 or higher)
-- [Microsoft Orleans](https://dotnet.github.io/orleans/) (3 or higher)
-- [GraphQL](https://github.com/graphql-dotnet/graphql-dotnet) (3 or higher)
-
-*You may use any 3rd party libraries which can facilitates your development.*
-
-### Content
-
-- A complete working solution with GraphQL and Orleans pre-configured. You do not need to create the boilerplate code yourself
-- A `movies.json` with some mock data that can be used as your database (Although you might opt to use some other datasource)
-
-### Running the sample application
+### Running the application
 
 - Make sure the startup project is set to `Movies.Server`
-- The project has one controller `SampleDataController` that has to requests:
-  - [GET] http://localhost:6600/api/sampledata/{id}
-  - [POST] http://localhost:6600/api/sampledata/{id}
-- There is also a Graph Query for the Application `AppGraphQuery` and one GraphType `SampleDataGraphType`
-  - Accessible through: `http://localhost:6600/api/graphql`
-  - Sample query:
-      ```
-      query sampleData($id: String!) {
-          sample(id: $id) {
-              id,
-              name
-          }
-      }
-      ```
-- All the endpoints call one simple Grain called `SampleGrain` that holds the data on the Orleans server
+- AWS DynamoDB is used as a storage provider. Locally, run `docker-compose up` command to start up localstack with DynamoDB
+- The project has one controller `MoviesController` that serves the following requests:
+  - [GET] http://localhost:6600/movies/{id}
+  - [POST] http://localhost:6600/movies
+  - [PUT] http://localhost:6600/movies/{id}
 
-### Helpful links
-- [Orleans](https://dotnet.github.io/orleans/docs/grains/index.html)
-- [GraphQL](https://graphql.org/learn/)
-- [Docker](https://www.docker.com/)
+### Request example
 
-### Extra Credit
+```
+{
+"id": 1,
+"key": "deadpool",
+"name": "Deadpool",
+"description": "A former Special Forces operative turned mercenary is subjected to a rogue experiment that leaves him with accelerated healing powers, adopting the alter ego Deadpool.",
+"genres": 
+  [
+    "action",
+    "adventure",
+    "comedy"
+  ],
+"rate": "8.6",
+"length": "1hr 48mins",
+"img": "deadpool.jpg"
+}
+```
 
-- Pre-loading data in memory on App Start-up so it can be retrieved faster (using the required technologies)
-- Use of good design patterns that avoid bottle necks
-- Add Unit tests
-- Rudimentary UI
-- Dockerized application
+### Improvements
 
-If you get the demo in good shape and have extra time, add your own flair and features.
-
-### Deliverable
-
-- Provide a working application
-- Provide source code in a public git such as github or Bitbucket repository
-- Provide markdown readme file
-  - General information about the app
-  - Provide steps how to build/launch your application
-
-Good luck!
+- Add functionality to list all movies
+- Add functionality to list top 5 rated movies
+- Add functionality to search and filter by genre using GraphQL
+- Pre-load DynamoDB with data on start up for faster retrieval
+- Extend unit tests to cover all functionality
+- Add end-to-end tests to test flows
