@@ -19,7 +19,7 @@ namespace Movies.Server.Controllers
 		}
 
 		[HttpGet("{movieId}")]
-		public async Task<IActionResult> GetMovieAsync(long movieId)
+		public async Task<IActionResult> GetMovieAsync(int movieId)
 		{
 			var movie = await _orleansClient.GetGrain<IMovieGrain>(movieId).GetMovieDetailsAsync();
 
@@ -43,7 +43,7 @@ namespace Movies.Server.Controllers
 		}
 
 		[HttpPut("{movieId}")]
-		public async Task<IActionResult> UpdateMovieAsync(long movieId, MovieDetails movie)
+		public async Task<IActionResult> UpdateMovieAsync(int movieId, MovieDetails movie)
 		{
 			await _orleansClient.GetGrain<IMovieGrain>(movieId).AddOrUpdateMovieAsync(movie);
 
@@ -51,7 +51,7 @@ namespace Movies.Server.Controllers
 		}
 
 		[HttpDelete("{movieId}")]
-		public async Task<IActionResult> DeleteMovieAsync(long movieId)
+		public async Task<IActionResult> DeleteMovieAsync(int movieId)
 		{
 			await _orleansClient.GetGrain<IMoviesStoreGrain>(movieId.ToString()).RemoveMovieAsync(movieId);
 

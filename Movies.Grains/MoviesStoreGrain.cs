@@ -9,7 +9,7 @@ namespace Movies.Grains
 {
 	public class MoviesStoreState
 	{
-		public Dictionary<long, MovieDetails> Store { get; set; } = new();
+		public Dictionary<int, MovieDetails> Store { get; set; } = new();
 	}
 
 	public class MoviesStoreGrain : Grain<MoviesStoreState>, IMoviesStoreGrain
@@ -18,7 +18,7 @@ namespace Movies.Grains
 		{
 			if (State.Store.TryGetValue(movie.Id, out var existingMovie))
 			{
-				State.Store[movie.Id] = movie;
+				State.Store[existingMovie.Id] = movie;
 			}
 			else
 			{
@@ -39,7 +39,7 @@ namespace Movies.Grains
 			return Task.FromResult(matchedMovies);
 		}
 
-		public async Task RemoveMovieAsync(long movieId)
+		public async Task RemoveMovieAsync(int movieId)
 		{
 			State.Store.Remove(movieId);
 

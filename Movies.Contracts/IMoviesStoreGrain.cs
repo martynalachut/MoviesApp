@@ -10,6 +10,6 @@ namespace Movies.GrainInterfaces
 		Task<HashSet<MovieDetails>> GetAllMoviesAsync();
 		Task<IEnumerable<MovieDetails>> GetMoviesByGenreAsync(string genre);
 		Task AddOrUpdateMovieAsync(MovieDetails movie);
-		Task RemoveMovieAsync(long movieId);
+		Task RemoveMovieAsync(int movieId);
 	}
 }
